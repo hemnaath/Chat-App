@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+			background-color: #f4f4f9;
+			color: #333;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		h1 {
+			color: #4db8ff;
+			margin-top: 20px;
+		}
+		a {
+			text-decoration: none;
+			color: #007bff;
+			font-weight: bold;
+			margin-top: 10px;
+			display: inline-block;
+		}
+		a:hover {
+			text-decoration: underline;
+		}
+		#chat {
+			margin-top: 20px;
+			border: 1px solid #ddd;
+			background: white;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			border-radius: 10px;
+			padding: 20px;
+			max-width: 600px;
+			width: 90%;
+		}
+		h2 {
+			color: #4db8ff;
+			text-align: center;
+			margin-bottom: 20px;
+		}
+		#messages {
+			list-style-type: none;
+			padding: 0;
+			height: 250px;
+			overflow-y: scroll;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			margin-bottom: 20px;
+			background: #fafafa;
+		}
+		#messages li {
+			padding: 10px;
+			border-bottom: 1px solid #eee;
+		}
+		#messages li:last-child {
+			border-bottom: none;
+		}
+		#messages li strong {
+			color: #007bff;
+		}
+		#message-input {
+			display: flex;
+			gap: 10px;
+		}
+		#message-input input {
+			flex: 1;
+			padding: 10px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			font-size: 16px;
+		}
+		#message-input button {
+			padding: 10px 20px;
+			background-color: #4db8ff;
+			border: none;
+			border-radius: 5px;
+			color: white;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background 0.3s ease;
+		}
+		#message-input button:hover {
+			background-color: #007bff;
+		}
+		#message-input button:active {
+			background-color: #0056b3;
+		}
+  	</style>
+</head>
+<body>
+	<h1>Welcome, <span id="username">{{USERNAME}}</span>!</h1>
+	<a href="/auth/logout">Logout</a>
+	<div id="chat">
+		<h2>Live Chat</h2>
+		<ul id="messages"></ul>
+		<div id="message-input">
+      		<input id="message" placeholder="Type a message..." />
+      		<button id="send">Send</button>
+    	</div>
+  	</div>
+  	<script>
+    	(function () {
+      		const socket = io();
+      		const username = document.getElementById("username").textContent;
+      		socket.emit("register user", username);
+			const messages = document.getElementById("messages");
+			const input = document.getElementById("message");
+			const sendButton = document.getElementById("send");
+      		sendButton.addEventListener("click", () => {
+				const message = input.value.trim();
+				if (message) {
+					socket.emit("chat message", message);
+					input.value = "";
+				}
+			});
+			socket.on("chat message", ({ username, message }) => {
+				const li = document.createElement("li");
+				li.innerHTML = `<strong>${username}:</strong> ${message}`;
+				messages.appendChild(li);
+				messages.scrollTop = messages.scrollHeight;
+			});
+    	})();
+  	</script>
+</body>
+</html>
